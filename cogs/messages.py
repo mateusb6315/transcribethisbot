@@ -78,8 +78,8 @@ class MessagesCog(commands.Cog):
         try:
             async with message.channel.typing():
                 texto = await self._transcrever_refinar(anexo)
-        except Exception as e:
-            await message.reply(f"❌ Erro: {e}")
+        except Exception:
+            await message.reply("❌ Ocorreu um erro ao transcrever o áudio.")
             return
 
         await message.reply(
