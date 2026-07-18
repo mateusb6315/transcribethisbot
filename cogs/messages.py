@@ -73,7 +73,6 @@ class MessagesCog(commands.Cog):
 
         anexo = self._extrair_audio(referencia)
         if not anexo:
-            await message.reply("❌ Nenhuma mensagem de voz encontrada.")
             return
 
         try:
