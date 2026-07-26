@@ -12,7 +12,7 @@ class RefineService:
                 {"role": "system", "content": PROMPT_SISTEMA},
                 {"role": "user", "content": f"Transcrição bruta: {transcricao}"},
             ],
-            temperature=0.2,
+            temperature=1,
             max_completion_tokens=1000,
         )
         return refinamento.choices[0].message.content or ""

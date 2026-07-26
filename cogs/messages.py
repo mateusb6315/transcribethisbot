@@ -45,7 +45,8 @@ class MessagesCog(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         try:
             texto = await self._transcrever_refinar(anexo)
-        except Exception:
+        except Exception as e:
+            print(f"❌ Erro ao transcrever áudio: {e}")
             await interaction.followup.send(
                 "❌ Ocorreu um erro ao transcrever o áudio.", ephemeral=True
             )
@@ -78,7 +79,8 @@ class MessagesCog(commands.Cog):
         try:
             async with message.channel.typing():
                 texto = await self._transcrever_refinar(anexo)
-        except Exception:
+        except Exception as e:
+            print(f"❌ Erro ao transcrever áudio: {e}")
             await message.reply("❌ Ocorreu um erro ao transcrever o áudio.")
             return
 
