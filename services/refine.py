@@ -15,4 +15,11 @@ class RefineService:
             temperature=1,
             max_completion_tokens=1000,
         )
-        return refinamento.choices[0].message.content or ""
+
+        mensagem_refinada = refinamento.choices[0].message.content
+        erro_transcricao = "Ocorreu um erro na transcrição do áudio."
+
+        if mensagem_refinada is not None and mensagem_refinada.strip() != "":
+            return mensagem_refinada
+        else:
+            return erro_transcricao

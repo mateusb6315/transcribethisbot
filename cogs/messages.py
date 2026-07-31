@@ -87,6 +87,9 @@ class MessagesCog(commands.Cog):
         await message.reply(
             f"""🎙️ Áudio de **{referencia.author.display_name}**:\n\n*{texto}*"""
         )
+        print(
+            f"Log: Transcrição de áudio de {referencia.author.display_name} enviada para {message.author.display_name}."
+        )
 
 
 async def setup(bot):
