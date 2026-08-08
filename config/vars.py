@@ -4,6 +4,7 @@ import os
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENROUTER_KEY = os.getenv("OPENROUTER_KEY")
 
 PROMPT_SISTEMA = """Você é um assistente especializado em formatação e refinamento de transcrições
                     de texto brutas, transformando-as em uma versão clara, legível e bem estruturada.
