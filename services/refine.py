@@ -1,17 +1,18 @@
-from openrouter import OpenRouter
-from config.vars import OPENROUTER_KEY, PROMPT_SISTEMA
+from openai import OpenAI
+from config.vars import OPENAI_API_KEY, PROMPT_REFINAMENTO
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 class RefineService:
     async def refine(self, transcricao: str) -> str:
-        async with OpenRouter(api_key=OPENROUTER_KEY) as op:
-            refinamento = await op.chat.send_async(
-                model="google/gemma-4-26b-a4b-it:free",
-                messages=[
-                    {"role": "system", "content": PROMPT_SISTEMA},
-                    {"role": "user", "content": transcricao},
-                ],
-            )
+        refinamento = client.chat.completions.create(
+            model="gpt-5.6-luna",
+            messages=[
+                {"role": "system", "content": PROMPT_REFINAMENTO},
+                {"role": "user", "content": transcricao},
+            ],
+        )
 
         mensagem_refinada = refinamento.choices[0].message.content
         erro_transcricao = "Ocorreu um erro na transcrição do áudio."
