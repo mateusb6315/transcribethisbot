@@ -1,0 +1,3 @@
+interface:
+  display_name: "Transcribe: validação"
+  short_description: "Reproduza falhas e valide mudanças com mocks"
