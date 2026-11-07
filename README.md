@@ -2,232 +2,257 @@
 
 # Transcribe This
 
-### Bot de transcrição e refinamento de áudios para Discord
+Bot para transcrever e refinar áudios no Discord.<br>
+A Discord bot for transcribing and refining audio.
 
-O Transcribe This converte mensagens de voz e arquivos de áudio enviados no Discord em texto claro, revisado e bem estruturado.
-
-![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![discord.py](https://img.shields.io/badge/discord.py-2.7.1-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI-API-412991?style=for-the-badge&logo=openai&logoColor=white)
-![OpenRouter](https://img.shields.io/badge/OpenRouter-API-111827?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+[Português](#português) · [English](#english)
 
 </div>
 
 ---
 
-## 1. Sobre o projeto
+# Português
 
-O **Transcribe This** é um bot para **Discord** que utiliza serviços de Inteligência Artificial para transformar mensagens de voz e anexos de áudio em texto legível.
+O **Transcribe This** transforma mensagens de voz e anexos de áudio do Discord em texto. A transcrição é revisada para melhorar pontuação, ortografia e organização, procurando preservar o conteúdo, o idioma, as gírias e as expressões do locutor.
 
-O projeto é útil quando ouvir um áudio não é conveniente ou possível, como em reuniões, ambientes silenciosos ou situações sem acesso a fones de ouvido. Além de transcrever o conteúdo, o bot refina o texto para melhorar pontuação, ortografia e organização, preservando o sentido, as gírias e o tom original da fala.
+## Ferramentas usadas
 
-O processamento é dividido em duas etapas:
+| Ferramenta | Função |
+| --- | --- |
+| Python 3.13+ | Linguagem e execução do bot. |
+| [discord.py](https://discordpy.readthedocs.io/) | Eventos, menu de contexto e comunicação com o Discord. |
+| [OpenAI Python SDK](https://github.com/openai/openai-python) | Chamadas assíncronas à API da OpenAI. |
+| [gpt-transcribe](https://developers.openai.com/api/docs/models/gpt-transcribe) | Transcrição dos arquivos de áudio. |
+| [gpt-6-luna](https://developers.openai.com/api/docs/models/gpt-6-luna) | Refinamento do texto transcrito. |
+| python-dotenv | Carregamento das variáveis do arquivo `.env`. |
 
-1. **Transcrição**: o áudio é convertido em texto bruto pela API da OpenAI.
-2. **Refinamento**: a transcrição é revisada e formatada pela API da OpenAI.
+As versões instaladas via pip estão em `requirements.txt`. O arquivo também inclui dependências legadas, como OpenRouter, que não é usado pelo fluxo atual.
 
-O usuário pode iniciar esse processo pelo menu de contexto de uma mensagem ou respondendo a uma mensagem de áudio com uma menção ao bot.
+## Instalação
 
-## 2. Pré-requisitos
+### Pré-requisitos
 
-### Ambiente
+- Python 3.13 ou superior e pip.
+- Uma aplicação e um bot criados no [Discord Developer Portal](https://discord.com/developers/applications).
+- Uma chave da [OpenAI Platform](https://platform.openai.com/) com acesso aos modelos e faturamento configurado.
 
-- **Python 3.13 ou superior**, conforme definido no `pyproject.toml`.
-- **pip** ou **Poetry** para instalação das dependências.
+No Discord Developer Portal, ative **Message Content Intent** na página do bot. Na instalação da aplicação, inclua os escopos `bot` e `applications.commands` e conceda permissões para visualizar canais, ler o histórico e enviar mensagens.
 
-### Aplicação no Discord
+### Configuração
 
-1. Crie uma aplicação no [Discord Developer Portal](https://discord.com/developers/applications).
-2. Na aba **Bot**, crie o bot e copie o token (`DISCORD_TOKEN`).
-3. Ative a intent **MESSAGE CONTENT INTENT**, necessária para que o bot processe mensagens e menções.
-4. Em **OAuth2 → URL Generator**, selecione os escopos `bot` e `applications.commands`.
-5. Conceda ao bot permissões para visualizar mensagens, ler o histórico, enviar mensagens e responder a interações.
-
-### Serviços de IA
-
-O projeto depende das seguintes credenciais:
-
-- Uma chave da [OpenAI Platform](https://platform.openai.com/) (`OPENAI_API_KEY`), usada para transcrição de áudio.
-- O refinamento também usa `OPENAI_API_KEY`.
-
-O uso desses serviços pode gerar custos ou estar sujeito a limites definidos pelos respectivos provedores.
-
-### Instalação
+Clone o repositório e entre na pasta do projeto:
 
 ```bash
-# 1. Clone o repositório
 git clone <url-do-repositorio>
 cd "transcribe this bot"
-
-# 2. Crie e ative um ambiente virtual (recomendado)
 python -m venv .venv
+```
 
-# Windows
-.venv\Scripts\activate
+Ative o ambiente virtual:
 
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+```
+
+```bash
 # Linux / macOS
 source .venv/bin/activate
+```
 
-# 3. Instale as dependências
+Instale as dependências e crie um arquivo `.env` na raiz:
+
+```bash
 pip install -r requirements.txt
 ```
 
-Como alternativa, o projeto também possui configuração para Poetry:
-
-```bash
-poetry install
-```
-
-### Variáveis de ambiente
-
-Crie um arquivo `.env` na raiz do projeto:
-
 ```env
-DISCORD_TOKEN=seu_token_do_discord_aqui
-OPENAI_API_KEY=sua_chave_da_openai_aqui
+DISCORD_TOKEN=seu_token_do_discord
+OPENAI_API_KEY=sua_chave_da_openai
 ```
 
-O arquivo `.env` não deve ser versionado. Mantenha todas as credenciais em sigilo e revogue imediatamente qualquer chave exposta.
-
-### Execução
+Inicie o bot a partir da raiz do projeto:
 
 ```bash
 python main.py
 ```
 
-Quando a configuração estiver correta, o terminal exibirá uma mensagem semelhante a:
+Quando conectado, o terminal exibirá `Bot online como <nome-do-bot>`. Os testes locais podem ser executados com `python -m unittest discover -s tests -v`.
+
+## Fluxo de operação
+
+Há duas formas de solicitar uma transcrição:
+
+1. Na mensagem com áudio, selecione **Apps → Transcrever áudio**. O resultado é efêmero, visível apenas para quem acionou o comando.
+2. Responda à mensagem com áudio mencionando o bot. O resultado é publicado como resposta no canal.
+
+Em ambos os casos, o bot seleciona o primeiro anexo com `content_type` iniciado por `audio/`, baixa o arquivo e executa as duas etapas:
 
 ```text
-Bot online como <nome-do-bot>
+Mensagem com áudio
+    ↓
+cogs/messages.py — identifica e baixa o anexo
+    ↓
+services/transcribe.py — gpt-transcribe gera o texto bruto
+    ↓
+services/refine.py — gpt-6-luna revisa o texto
+    ↓
+Discord — envia o resultado, dividido quando necessário
 ```
 
-## 3. Fluxo do processo de transcrição
+Os prompts ficam em `config/vars.py`. O prompt de transcrição fornece contexto de conversa informal; o de refinamento solicita correções e preservação do conteúdo e do estilo. O processamento é repetido em cada acionamento, inclusive para um mesmo anexo.
 
-A estrutura do projeto separa a inicialização do bot, a interação com o Discord e a comunicação com os serviços de IA.
+## Prompt caching e custo médio
 
-### Estrutura de pastas
+### Como o cache está configurado
+
+O refinamento usa uma chave estável e um ponto de cache explícito ao final do prompt de sistema. O modo explícito evita criar um ponto de cache automático após a transcrição variável. O cache é gerenciado pela OpenAI e não elimina o envio do prompt nas requisições.
+
+A OpenAI exige um prefixo de pelo menos **1.024 tokens visíveis** para o cache dos modelos GPT-5.6 e posteriores. O prompt fixo atual é menor que esse limite; portanto, **não se espera economia de cache com ele**. A chamada de transcrição não configura um cache equivalente para seu prompt. Não existe cache de resultados de áudio no projeto. Consulte o [guia de prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) para regras, retenção e cobrança atualizadas.
+
+### Estimativa ilustrativa
+
+Valores em dólares americanos, consultados em **7 de novembro de 2026**, para processamento padrão. A OpenAI apresenta `gpt-transcribe` com custo estimado de **US$ 0,0045 por minuto**; para `gpt-6-luna`, informa **US$ 0,10 por milhão de tokens de entrada** e **US$ 0,50 por milhão de tokens de saída**. Consulte os [preços oficiais](https://developers.openai.com/api/docs/pricing), pois podem mudar.
+
+| Hipótese por solicitação | Cálculo | Custo estimado |
+| --- | --- | ---: |
+| Áudio de 1 minuto | 1 × US$ 0,0045 | US$ 0,0045 |
+| Refinamento: 500 tokens de entrada e 500 de saída | (500 × 0,10 + 500 × 0,50) / 1.000.000 | US$ 0,0003 |
+| **Total por solicitação** | US$ 0,0045 + US$ 0,0003 | **US$ 0,0048** |
+| **1.000 solicitações iguais** | 1.000 × US$ 0,0048 | **US$ 4,80** |
+
+Os 500 tokens de entrada são uma hipótese para o prompt, a transcrição e demais tokens de entrada; os 500 de saída incluem possíveis tokens de raciocínio cobrados. A tabela assume ausência de leituras e gravações de cache cobradas. O valor por minuto de transcrição é uma estimativa, não uma garantia de cobrança fixa. Duração, idioma, conteúdo, tokens efetivos, processamento, taxas e impostos podem alterar o custo. O bot ainda não registra métricas de tokens ou duração, portanto esses números **não são uma média medida do projeto**. Para obter uma média real, divida o gasto observado na OpenAI pelo número de solicitações concluídas no mesmo período.
+
+## Informações importantes
+
+- O áudio é enviado à OpenAI para processamento. Avalie a privacidade e o consentimento antes de usar conteúdo sensível.
+- O bot precisa estar online e ter acesso ao canal e à mensagem original. A intent de conteúdo deve estar ativa no portal e no código.
+- Uma resposta com menção é pública no canal; a opção do menu de contexto é efêmera.
+- Apenas o primeiro anexo identificado como áudio é processado. Formato, tamanho, disponibilidade dos modelos e limites da API podem impedir o processamento; consulte o [guia de transcrição](https://developers.openai.com/api/docs/guides/speech-to-text).
+- Resultados podem conter erros ou alterações de sentido; revise transcrições importantes.
+- Não versione o `.env` nem compartilhe suas chaves. Revogue credenciais expostas. `OPENROUTER_KEY` permanece como variável legada e não é necessária para o fluxo atual.
+- O projeto é distribuído sob a [licença MIT](LICENSE). `discloud.config` contém configuração de hospedagem para a Discloud.
+
+---
+
+# English
+
+**Transcribe This** converts Discord voice messages and audio attachments into text. The transcript is reviewed for punctuation, spelling, and organization while aiming to preserve the speaker's content, language, slang, and expressions.
+
+## Tools used
+
+| Tool | Purpose |
+| --- | --- |
+| Python 3.13+ | Bot language and runtime. |
+| [discord.py](https://discordpy.readthedocs.io/) | Discord events, context menu, and communication. |
+| [OpenAI Python SDK](https://github.com/openai/openai-python) | Asynchronous calls to the OpenAI API. |
+| [gpt-transcribe](https://developers.openai.com/api/docs/models/gpt-transcribe) | Audio file transcription. |
+| [gpt-6-luna](https://developers.openai.com/api/docs/models/gpt-6-luna) | Transcript refinement. |
+| python-dotenv | Loads environment variables from `.env`. |
+
+Versions installed with pip are listed in `requirements.txt`. The file also includes legacy dependencies, such as OpenRouter, which is not used by the current workflow.
+
+## Installation
+
+### Requirements
+
+- Python 3.13 or later and pip.
+- An application and bot created in the [Discord Developer Portal](https://discord.com/developers/applications).
+- An [OpenAI Platform](https://platform.openai.com/) API key with access to the models and billing configured.
+
+In the Discord Developer Portal, enable **Message Content Intent** on the bot page. When installing the application, include the `bot` and `applications.commands` scopes and grant permission to view channels, read message history, and send messages.
+
+### Setup
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone <repository-url>
+cd "transcribe this bot"
+python -m venv .venv
+```
+
+Activate the virtual environment:
+
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+```
+
+```bash
+# Linux / macOS
+source .venv/bin/activate
+```
+
+Install dependencies and create a `.env` file in the project root:
+
+```bash
+pip install -r requirements.txt
+```
+
+```env
+DISCORD_TOKEN=your_discord_token
+OPENAI_API_KEY=your_openai_api_key
+```
+
+Start the bot from the project root:
+
+```bash
+python main.py
+```
+
+Once connected, the terminal displays `Bot online como <bot-name>`. Run local tests with `python -m unittest discover -s tests -v`.
+
+## How it works
+
+There are two ways to request a transcript:
+
+1. On a message containing audio, select **Apps → Transcrever áudio**. The result is ephemeral and visible only to the person who invoked the command.
+2. Reply to a message containing audio and mention the bot. The result is posted as a reply in the channel.
+
+In both cases, the bot selects the first attachment whose `content_type` starts with `audio/`, downloads it, and performs two steps:
 
 ```text
-transcribe this bot/
-├── main.py                 # Ponto de entrada e inicialização do bot
-├── config/
-│   └── vars.py             # Variáveis de ambiente e prompt do sistema
-├── cogs/
-│   └── messages.py         # Comandos, eventos e respostas no Discord
-├── services/
-│   ├── transcribe.py       # Transcrição de áudio para texto bruto
-│   └── refine.py           # Refinamento do texto transcrito
-├── requirements.txt        # Dependências para instalação via pip
-├── pyproject.toml          # Metadados e configuração do Poetry
-└── discloud.config         # Configuração de deploy na Discloud
+Message containing audio
+    ↓
+cogs/messages.py — finds and downloads the attachment
+    ↓
+services/transcribe.py — gpt-transcribe produces a raw transcript
+    ↓
+services/refine.py — gpt-6-luna reviews the text
+    ↓
+Discord — sends the result, split into parts when necessary
 ```
 
-O carregamento dos cogs é dinâmico: arquivos Python adicionados à pasta `cogs/` podem ser carregados durante a inicialização, desde que implementem a estrutura esperada pelo `discord.py`.
+The prompts are in `config/vars.py`. The transcription prompt provides informal conversation context; the refinement prompt requests corrections while preserving content and style. Each invocation repeats processing, including requests for the same attachment.
 
-### 3.1. Inicialização — `main.py`
+## Prompt caching and average cost
 
-Ao executar `python main.py`:
+### Cache configuration
 
-1. As intents padrão são configuradas e `message_content` é habilitada.
-2. Uma instância de `commands.Bot` é criada.
-3. O código verifica se `DISCORD_TOKEN` foi configurado.
-4. O `setup_hook()` carrega os arquivos da pasta `cogs/` e sincroniza os comandos de aplicação com o Discord.
-5. O evento `on_ready()` confirma no terminal que o bot está conectado.
+Refinement uses a stable key and an explicit cache breakpoint at the end of the system prompt. Explicit mode avoids automatically creating a cache breakpoint after the variable transcript. OpenAI manages the cache, and requests still send the prompt.
 
-### 3.2. Configuração — `config/vars.py`
+OpenAI requires a prefix of at least **1,024 visible tokens** to cache GPT-5.6 and later models. The current fixed prompt is shorter than this threshold, so **no cache savings are expected for it**. The transcription call does not configure an equivalent prompt cache. The project does not cache audio results. See the [prompt caching guide](https://developers.openai.com/api/docs/guides/prompt-caching) for current rules, retention, and pricing.
 
-Esse módulo carrega o arquivo `.env` e disponibiliza:
+### Illustrative estimate
 
-- `TOKEN`, obtido de `DISCORD_TOKEN`;
-- `OPENAI_API_KEY`, usada pelo cliente assíncrono da OpenAI;
-- `OPENROUTER_KEY`, variável legada sem uso no fluxo atual;
-- `PROMPT_REFINAMENTO` e `PROMPT_TRANSCRIBE`, que definem o contexto das chamadas.
+Prices are in US dollars, checked on **November 7, 2026**, for standard processing. OpenAI lists `gpt-transcribe` at an estimated **$0.0045 per minute**; for `gpt-6-luna`, it lists **$0.10 per million input tokens** and **$0.50 per million output tokens**. Check [official pricing](https://developers.openai.com/api/docs/pricing), as rates can change.
 
-O prompt orienta o modelo a corrigir pontuação, concordância e erros ortográficos, dividir textos longos em parágrafos e preservar gírias, expressões coloquiais, termos ofensivos e o estilo original. A resposta deve conter somente o texto refinado.
+| Assumption per request | Calculation | Estimated cost |
+| --- | --- | ---: |
+| 1 minute of audio | 1 × $0.0045 | $0.0045 |
+| Refinement: 500 input and 500 output tokens | (500 × 0.10 + 500 × 0.50) / 1,000,000 | $0.0003 |
+| **Total per request** | $0.0045 + $0.0003 | **$0.0048** |
+| **1,000 identical requests** | 1,000 × $0.0048 | **$4.80** |
 
-### 3.3. Interação com o Discord — `cogs/messages.py`
+The 500 input tokens are an assumption covering the prompt, transcript, and other input tokens; the 500 output tokens include any billable reasoning tokens. The table assumes no billable cache reads or writes. The transcription price per minute is an estimate, not a guaranteed fixed charge. Duration, language, content, actual token counts, processing, fees, and taxes can change the cost. The bot does not currently record token or duration metrics, so these figures **are not a measured project average**. For a real average, divide observed OpenAI spending by the number of completed requests in the same period.
 
-O cog `MessagesCog` instancia os serviços de transcrição e refinamento e disponibiliza duas formas de acionamento.
+## Important information
 
-#### Menu de contexto — “Transcrever áudio”
-
-Ao selecionar uma mensagem e acessar **Apps → Transcrever áudio**:
-
-1. O bot procura o primeiro anexo cujo `content_type` começa com `audio/`.
-2. Se nenhum áudio for encontrado, envia uma resposta efêmera informando o problema.
-3. Se houver áudio, a interação é adiada enquanto o processamento é executado.
-4. O bot baixa o anexo, realiza as duas etapas de IA e envia o resultado de forma efêmera, identificando o autor do áudio.
-
-#### Resposta com menção ao bot
-
-O bot também processa uma mensagem quando todas as condições abaixo são atendidas:
-
-1. A mensagem não foi enviada por outro bot.
-2. O bot foi mencionado.
-3. A mensagem é uma resposta a outra mensagem.
-4. A mensagem respondida contém um anexo de áudio.
-
-Nesse fluxo, a mensagem referenciada é obtida do cache ou buscada no canal. Durante o processamento, o bot exibe o indicador de digitação e publica a transcrição refinada como resposta no canal.
-
-### 3.4. Núcleo da IA — `services/`
-
-O método `_transcrever_refinar()` coordena as duas etapas:
-
-```text
-Áudio (bytes)
-    ↓
-TranscribeService — OpenAI / gpt-transcribe
-    ↓
-Texto bruto
-    ↓
-RefineService — OpenAI / gpt-6-luna
-    ↓
-Texto refinado
-```
-
-#### `services/transcribe.py` — transcrição
-
-O serviço recebe os bytes do áudio, o nome do arquivo e o tipo MIME. Em seguida, envia o arquivo ao endpoint de transcrição da OpenAI utilizando o modelo `gpt-transcribe` e retorna o texto produzido.
-
-#### `services/refine.py` — refinamento
-
-O serviço envia a transcrição ao modelo `gpt-6-luna` pela OpenAI. O prompt do sistema orienta a revisão do texto sem modificar seu conteúdo ou estilo. Caso o modelo não retorne um texto válido, o serviço informa que ocorreu um erro na transcrição. O cache explícito marca o fim do prompt fixo e não armazena a transcrição variável. O prefixo atual é menor que o mínimo de 1.024 tokens exigido para cache, portanto não há economia de cache esperada com este prompt. O endpoint de transcrição não expõe configuração equivalente de cache de prompt.
-
-### 3.5. Fluxo completo
-
-```text
-1. O usuário aciona o bot pelo menu de contexto ou por reply + menção
-                              ↓
-2. messages.py localiza o anexo de áudio
-                              ↓
-3. O anexo é baixado como bytes
-                              ↓
-4. A OpenAI gera o texto bruto com gpt-transcribe
-                              ↓
-5. A OpenAI refina o texto com gpt-6-luna
-                              ↓
-6. O bot envia o resultado no Discord
-```
-
-Exceções durante o processamento são capturadas pelo cog. Nesses casos, o erro é registrado no terminal e o usuário recebe uma mensagem informando que a transcrição não pôde ser concluída.
-
-## 4. Informações importantes
-
-- A intent **MESSAGE CONTENT INTENT** deve estar habilitada no Developer Portal e no código do bot.
-- São aceitos anexos cujo `content_type` começa com `audio/`. Mensagens de voz nativas do Discord normalmente utilizam o formato OGG.
-- O fluxo pelo menu de contexto gera uma resposta efêmera, visível apenas para quem o acionou.
-- O fluxo por reply e menção publica a resposta no canal.
-- A transcrição e o refinamento dependem de serviços externos e podem sofrer limitações de disponibilidade, cota ou custo.
-- O conteúdo do áudio é enviado aos provedores configurados para processamento. Avalie requisitos de privacidade antes de utilizar o bot em canais com informações sensíveis.
-- Nunca versione o arquivo `.env`. Em caso de vazamento de credenciais, revogue as chaves e gere novas imediatamente.
-- O arquivo `discloud.config` contém parâmetros básicos para hospedagem na Discloud.
-- Novas funcionalidades podem ser adicionadas como cogs na pasta `cogs/`.
-- Os modelos podem ser alterados nos arquivos `services/transcribe.py` e `services/refine.py`, desde que as APIs e os formatos de requisição permaneçam compatíveis.
-
-## 5. Licença
-
-Este projeto é distribuído sob a **Licença MIT**. É permitido usar, copiar, modificar, distribuir e comercializar o software, desde que o aviso de copyright e o texto da licença sejam mantidos.
-
-O software é fornecido “como está”, sem garantias expressas ou implícitas.
-
+- Audio is sent to OpenAI for processing. Consider privacy and consent before using sensitive content.
+- The bot must be online and able to access the channel and original message. The message content intent must be enabled in the portal and in the code.
+- A reply mentioning the bot is public in the channel; the context-menu response is ephemeral.
+- Only the first attachment identified as audio is processed. Format, size, model availability, and API limits can prevent processing; see the [transcription guide](https://developers.openai.com/api/docs/guides/speech-to-text).
+- Results may contain errors or changes in meaning; review important transcripts.
+- Do not commit `.env` or share your keys. Revoke exposed credentials. `OPENROUTER_KEY` remains a legacy variable and is not required by the current workflow.
+- The project is distributed under the [MIT license](LICENSE). `discloud.config` contains Discloud hosting configuration.
