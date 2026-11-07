@@ -22,7 +22,7 @@ Cada solicitação processa **somente o primeiro anexo cujo `content_type` come�
 ### Ambiente de execução
 
 - **Python 3.13 ou superior** como referência de ambiente do projeto. A análise local e os testes foram executados com Python 3.13.3. O `pyproject.toml` local declara `>=3.13`, mas esse arquivo está ignorado e não acompanha o clone; o repositório versionado não impõe a versão do interpretador.
-- **pip** e um ambiente virtual para instalar as dependências de `requirements.txt`.
+- **pip** ou **Poetry 2.x** e um ambiente virtual para instalar as dependências.
 - **Git**, caso a instalação seja feita por clone.
 - Conectividade com Discord e OpenAI durante a execução real.
 - Uma aplicação com bot no [Discord Developer Portal](https://discord.com/developers/applications) e seu token.
@@ -43,7 +43,7 @@ As versões abaixo são as declaradas no arquivo de instalação do repositório
 | `unittest` e `unittest.mock` | Biblioteca padrão do Python | Testes assíncronos e simulação dos serviços externos. |
 | Discloud | `discloud.config` | Configuração opcional de hospedagem. |
 
-O caminho padrão de instalação é **pip + `requirements.txt`**. Há um `poetry.lock` versionado, mas o respectivo `pyproject.toml` está no `.gitignore`; por isso, o clone não contém uma configuração completa para instalação por Poetry. `package.json` está vazio e `package-lock.json` não define uma aplicação JavaScript: Node.js e npm não são necessários ao fluxo atual.
+O projeto oferece dois caminhos de instalação: **pip + `requirements.txt`**, que permanece simples para uma execução direta, ou **Poetry 2.x**, usando o manifesto `pyproject.toml` e o lockfile `poetry.lock` versionados em conjunto. Para instalar com Poetry e respeitar as versões resolvidas no lockfile, execute `poetry install` na raiz do projeto e inicie o bot no ambiente criado com `poetry run python -X utf8 main.py`. O manifesto declara Python `>=3.13` e inclui PyYAML como dependência. `requirements.txt` continua sendo uma lista independente; mantenha ambos os arquivos de dependências alinhados ao alterar dependências. `package.json` está vazio e `package-lock.json` não define uma aplicação JavaScript: Node.js e npm não são necessários ao fluxo atual.
 
 Não há conversão local de mídia nem dependência direta de FFmpeg no código. O bot envia os bytes originais do anexo ao serviço de transcrição.
 
@@ -160,7 +160,8 @@ transcribethisbot/
 ├── CLAUDE.md               # Entrada de contexto para Claude Code
 ├── MEMORY.md               # Estado verificado e conhecimento durável
 ├── requirements.txt         # Dependências para instalação padrão
-├── poetry.lock              # Lockfile sem manifesto versionado correspondente
+├── pyproject.toml           # Manifesto de projeto e dependências para Poetry
+├── poetry.lock              # Versões resolvidas para instalação reproduzível
 ├── package.json             # Manifesto vazio, sem scripts de execução
 ├── package-lock.json        # Arquivo auxiliar de npm
 ├── discloud.config          # Configuração de hospedagem
@@ -335,7 +336,7 @@ Com essa opção, os seis testes passaram. O código de logging ainda precisa de
 | Refinamento vazio retorna uma frase de erro como resultado | O usuário recebe essa frase com cabeçalho de transcrição; não há um estado de falha distinguível pelo chamador. |
 | Configuração espalhada | Modelos são constantes nos serviços; mudanças exigem edição do código e alinhamento dos testes. |
 | Logging limitado | Não há métricas de latência, duração, tokens, custo ou taxa de falha; exceções são impressas sem traceback explícito. |
-| Empacotamento incompleto para Poetry | `poetry.lock` está versionado, mas `pyproject.toml` está ignorado; o caminho reproduzível documentado usa `requirements.txt`. |
+| Dependências em dois formatos | `requirements.txt` e `pyproject.toml`/`poetry.lock` são caminhos de instalação suportados. Mantenha as dependências declaradas nos dois manifestos sincronizadas ao atualizá-las. |
 | Dependência do diretório de execução | Iniciar fora da raiz pode impedir `os.listdir("./cogs")` de encontrar as extensões. |
 
 ### Pontos em investigação e validação pendente
