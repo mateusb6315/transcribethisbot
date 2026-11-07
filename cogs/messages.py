@@ -32,6 +32,20 @@ class MessagesCog(commands.Cog):
         )
         return await self.refine_service.refine(transcricao)
 
+    def _dividir_texto(self, texto: str, limite: int = 2000) -> list[str]:
+        partes = []
+        while len(texto) > limite:
+            corte = texto.rfind("\n", 0, limite + 1)
+            if corte <= 0:
+                corte = texto.rfind(" ", 0, limite + 1)
+            if corte <= 0:
+                corte = limite
+            partes.append(texto[:corte])
+            texto = texto[corte:]
+        if texto:
+            partes.append(texto)
+        return partes
+
     async def transcrever(
         self, interaction: discord.Interaction, message: discord.Message
     ):
@@ -52,31 +66,33 @@ class MessagesCog(commands.Cog):
             )
             return
 
-        await interaction.followup.send(
-            content=f"📝 Áudio de {message.author.display_name}\n{texto}",
-            ephemeral=True,
-        )
+        for parte in self._dividir_texto(
+            f"📝 Áudio de {message.author.display_name}\n{texto}"
+        ):
+            await interaction.followup.send(
+                content=parte, ephemeral=True, allowed_mentions=discord.AllowedMentions.none()
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
-        if self.bot.user not in message.mentions:
+        if self.bot.user is None or self.bot.user not in message.mentions:
             return
         if message.reference is None or message.reference.message_id is None:
             return
 
-        referencia = message.reference.resolved
-        if not isinstance(referencia, discord.Message):
-            referencia = await message.channel.fetch_message(
-                message.reference.message_id
-            )
-
-        anexo = self._extrair_audio(referencia)
-        if not anexo:
-            return
-
         try:
+            referencia = message.reference.resolved
+            if not isinstance(referencia, discord.Message):
+                referencia = await message.channel.fetch_message(
+                    message.reference.message_id
+                )
+
+            anexo = self._extrair_audio(referencia)
+            if not anexo:
+                return
+
             async with message.channel.typing():
                 texto = await self._transcrever_refinar(anexo)
         except Exception as e:
@@ -84,9 +100,10 @@ class MessagesCog(commands.Cog):
             await message.reply("❌ Ocorreu um erro ao transcrever o áudio.")
             return
 
-        await message.reply(
-            f"""🎙️ Áudio de **{referencia.author.display_name}**:\n\n*{texto}*"""
-        )
+        for parte in self._dividir_texto(
+            f"🎙️ Áudio de {referencia.author.display_name}:\n\n{texto}"
+        ):
+            await message.reply(parte, allowed_mentions=discord.AllowedMentions.none())
         print(
             f"Log: Transcrição de áudio de {referencia.author.display_name} enviada para {message.author.display_name}."
         )

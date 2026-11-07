@@ -25,7 +25,7 @@ O projeto é útil quando ouvir um áudio não é conveniente ou possível, como
 O processamento é dividido em duas etapas:
 
 1. **Transcrição**: o áudio é convertido em texto bruto pela API da OpenAI.
-2. **Refinamento**: a transcrição é revisada e formatada por um modelo disponibilizado através do OpenRouter.
+2. **Refinamento**: a transcrição é revisada e formatada pela API da OpenAI.
 
 O usuário pode iniciar esse processo pelo menu de contexto de uma mensagem ou respondendo a uma mensagem de áudio com uma menção ao bot.
 
@@ -46,10 +46,10 @@ O usuário pode iniciar esse processo pelo menu de contexto de uma mensagem ou r
 
 ### Serviços de IA
 
-O projeto depende de duas credenciais:
+O projeto depende das seguintes credenciais:
 
 - Uma chave da [OpenAI Platform](https://platform.openai.com/) (`OPENAI_API_KEY`), usada para transcrição de áudio.
-- Uma chave do [OpenRouter](https://openrouter.ai/) (`OPENROUTER_KEY`), usada para o refinamento do texto.
+- O refinamento também usa `OPENAI_API_KEY`.
 
 O uso desses serviços pode gerar custos ou estar sujeito a limites definidos pelos respectivos provedores.
 
@@ -86,7 +86,6 @@ Crie um arquivo `.env` na raiz do projeto:
 ```env
 DISCORD_TOKEN=seu_token_do_discord_aqui
 OPENAI_API_KEY=sua_chave_da_openai_aqui
-OPENROUTER_KEY=sua_chave_do_openrouter_aqui
 ```
 
 O arquivo `.env` não deve ser versionado. Mantenha todas as credenciais em sigilo e revogue imediatamente qualquer chave exposta.
@@ -142,8 +141,8 @@ Esse módulo carrega o arquivo `.env` e disponibiliza:
 
 - `TOKEN`, obtido de `DISCORD_TOKEN`;
 - `OPENAI_API_KEY`, usada pelo cliente assíncrono da OpenAI;
-- `OPENROUTER_KEY`, usada pelo cliente do OpenRouter;
-- `PROMPT_SISTEMA`, que define as regras de refinamento da transcrição.
+- `OPENROUTER_KEY`, variável legada sem uso no fluxo atual;
+- `PROMPT_REFINAMENTO` e `PROMPT_TRANSCRIBE`, que definem o contexto das chamadas.
 
 O prompt orienta o modelo a corrigir pontuação, concordância e erros ortográficos, dividir textos longos em parágrafos e preservar gírias, expressões coloquiais, termos ofensivos e o estilo original. A resposta deve conter somente o texto refinado.
 
@@ -178,22 +177,22 @@ O método `_transcrever_refinar()` coordena as duas etapas:
 ```text
 Áudio (bytes)
     ↓
-TranscribeService — OpenAI / whisper-1
+TranscribeService — OpenAI / gpt-transcribe
     ↓
 Texto bruto
     ↓
-RefineService — OpenRouter / google/gemma-4-26b-a4b-it:free
+RefineService — OpenAI / gpt-6-luna
     ↓
 Texto refinado
 ```
 
 #### `services/transcribe.py` — transcrição
 
-O serviço recebe os bytes do áudio, o nome do arquivo e o tipo MIME. Em seguida, envia o arquivo ao endpoint de transcrição da OpenAI utilizando o modelo `whisper-1` e retorna o texto produzido.
+O serviço recebe os bytes do áudio, o nome do arquivo e o tipo MIME. Em seguida, envia o arquivo ao endpoint de transcrição da OpenAI utilizando o modelo `gpt-transcribe` e retorna o texto produzido.
 
 #### `services/refine.py` — refinamento
 
-O serviço envia a transcrição ao modelo `google/gemma-4-26b-a4b-it:free` por meio do OpenRouter. O prompt do sistema orienta a revisão do texto sem modificar seu conteúdo ou estilo. Caso o modelo não retorne um texto válido, o serviço informa que ocorreu um erro na transcrição.
+O serviço envia a transcrição ao modelo `gpt-6-luna` pela OpenAI. O prompt do sistema orienta a revisão do texto sem modificar seu conteúdo ou estilo. Caso o modelo não retorne um texto válido, o serviço informa que ocorreu um erro na transcrição. O cache explícito marca o fim do prompt fixo e não armazena a transcrição variável. O prefixo atual é menor que o mínimo de 1.024 tokens exigido para cache, portanto não há economia de cache esperada com este prompt. O endpoint de transcrição não expõe configuração equivalente de cache de prompt.
 
 ### 3.5. Fluxo completo
 
@@ -204,9 +203,9 @@ O serviço envia a transcrição ao modelo `google/gemma-4-26b-a4b-it:free` por 
                               ↓
 3. O anexo é baixado como bytes
                               ↓
-4. A OpenAI gera o texto bruto com whisper-1
+4. A OpenAI gera o texto bruto com gpt-transcribe
                               ↓
-5. O OpenRouter refina o texto com o modelo Gemma
+5. A OpenAI refina o texto com gpt-6-luna
                               ↓
 6. O bot envia o resultado no Discord
 ```

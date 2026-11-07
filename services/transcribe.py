@@ -9,7 +9,7 @@ class TranscribeService:
         self, audio_bytes: bytes, filename: str, content_type: str
     ) -> str:
         transcricao = await client.audio.transcriptions.create(
-            model="whisper-1",
+            model="gpt-transcribe",
             file=(filename, audio_bytes, content_type),
             prompt=PROMPT_TRANSCRIBE,
         )

@@ -1,15 +1,24 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 from config.vars import OPENAI_API_KEY, PROMPT_REFINAMENTO
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 class RefineService:
     async def refine(self, transcricao: str) -> str:
-        refinamento = client.chat.completions.create(
-            model="gpt-5.6-luna",
+        refinamento = await client.chat.completions.create(
+            model="gpt-6-luna",
+            prompt_cache_key="refinamento-transcricao-v1",
+            prompt_cache_options={"mode": "explicit"},
             messages=[
-                {"role": "system", "content": PROMPT_REFINAMENTO},
+                {
+                    "role": "system",
+                    "content": [{
+                        "type": "text",
+                        "text": PROMPT_REFINAMENTO,
+                        "prompt_cache_breakpoint": {"mode": "explicit"},
+                    }],
+                },
                 {"role": "user", "content": transcricao},
             ],
         )
