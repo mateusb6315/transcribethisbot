@@ -13,11 +13,13 @@ class RefineService:
             messages=[
                 {
                     "role": "system",
-                    "content": [{
-                        "type": "text",
-                        "text": PROMPT_REFINAMENTO,
-                        "prompt_cache_breakpoint": {"mode": "explicit"},
-                    }],
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": PROMPT_REFINAMENTO,
+                            "prompt_cache_breakpoint": {"mode": "explicit"},
+                        }
+                    ],
                 },
                 {"role": "user", "content": transcricao},
             ],
