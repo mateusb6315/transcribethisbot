@@ -1,10 +1,17 @@
+![Banner do Transcribe This: microfone e símbolos de texto sobre ondas sonoras](assets/transcribe-this-banner.png)
+
 # Transcribe This
 
-Bot para transformar mensagens de voz e anexos de áudio do Discord em texto revisado, com processamento assíncrono pela API da OpenAI.
+Transforme mensagens de voz e anexos de áudio do Discord em texto revisado, sem sair da conversa. O **Transcribe This** ajuda você a acompanhar uma mensagem quando não pode ouvir o áudio ou precisa consultar seu conteúdo por escrito.
+
+[![Python](https://img.shields.io/badge/Python-3.13%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![discord.py](https://img.shields.io/badge/discord.py-2.7.1-5865F2?logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-API-412991?logo=openai&logoColor=white)](https://openai.com/)
+[![OpenRouter](https://img.shields.io/badge/OpenRouter-legado-555555?logo=openrouter&logoColor=white)](https://openrouter.ai/)
 
 ## 1. O que é o Transcribe This e qual é seu objetivo
 
-O **Transcribe This** facilita o acesso ao conteúdo de áudios em conversas do Discord: quem prefere ler, precisa consultar uma informação ou não pode ouvir uma mensagem pode solicitar uma transcrição sem sair do canal.
+Escolha uma mensagem com áudio e use o menu de contexto para receber o resultado em particular, ou responda à mensagem mencionando o bot para compartilhar a transcrição no canal. O processamento é assíncrono e utiliza a API da OpenAI; o OpenRouter é uma dependência legada, sem uso no fluxo atual.
 
 O processamento tem duas etapas: um modelo transcreve o arquivo de áudio e outro revisa o texto, corrigindo pontuação e erros ortográficos evidentes e organizando parágrafos. As instruções pedem a preservação do sentido, dos detalhes, do idioma, das gírias e dos palavrões, sem formalizar ou censurar a fala. Essa preservação é um objetivo dos prompts; o resultado ainda precisa de revisão humana quando a precisão for importante.
 
